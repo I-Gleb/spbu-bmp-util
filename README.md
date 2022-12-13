@@ -1,84 +1,84 @@
-# Утилита для работы с BMP
+# Utility for working with BMP
 
-## Вырезать и повернуть
-Реализуется приложение `./hw-01_bmp`, которое вырезает прямоугольник из BMP-файла с изображением,
-поворачивает этот прямоугольник на 90 градусов по часовой стрелке и сохраняет результат в отдельный
-файл.
+## Cut and rotate
+The application `./hw-01_bmp` is implemented, which cuts a rectangle from a BMP image,
+rotates this rectangle 90 degrees clockwise and saves the result in a separate
+file.
 
-Все изображения (изначальное для чтения и сохранённый результат) хранятся в заданном формате:
+All images are stored in the given format:
 
-* Общий формат — [BMP](https://ru.wikipedia.org/wiki/BMP).
-* В рамках формата BMP используется формат *DIB* с заголовком `BITMAPINFOHEADER` (версия 3).
-* Значение поля `biHeight` (высота изображения) строго больше нуля.
-* Используются 24 бита цвета на пиксель (один байт на цветовой канал).
-* Палитра (таблица цветов) не используется.
-* Сжатие не используется.
+* The general format is [BMP](https://en.wikipedia.org/wiki/BMP).
+* The BMP format uses the *DIB* format with the `BITMAPINFOHEADER` header (version 3).
+* The value of the `biHeight` field (image height) is strictly greater than zero.
+* Uses 24 bits of color per pixel (one byte per color channel).
+* Palette (color table) is not used.
+* Compression is not used.
 
-Утилита работает для little endian систем и только для лишь для одного конкретного вида BMP-файлов.
+The utility works for little endian systems and only for one specific type of BMP files.
 
-### Консольное приложение
-Приложение запускается следующей командой:
+### Console application
+The application is launched with the following command:
 
 ```
 ./hw-01_bmp crop-rotate ‹in-bmp› ‹out-bmp› ‹x› ‹y› ‹w› ‹h›
 ```
 
-Используемые параметры:
+Used parameters:
 
-* `crop-rotate` — обязательный параметр, означающий выполняемое действие.
-* `in-bmp` — имя входного файла с изображением.
-* `out-bmp` — имя выходного файла с изображением.
-* `x`, `y` — координаты левого верхнего угла области, которую необходимо вырезать и повернуть.
-  Координаты начинаются с нуля, таким образом *(0, 0)* — это верхний левый угол.
-* `w`, `h` — соотвественно, ширина и высота области до поворота.
+* `crop-rotate` is a required parameter, indicating the action to be performed.
+* `in-bmp` is the name of the input image file.
+* `out-bmp` is the name of the output image file.
+* `x`, `y` are the coordinates of the upper left corner of the area to be cut and rotated.
+   Coordinates start at zero, so *(0, 0)* is the top left corner.
+* `w`, `h` - respectively, the width and height of the area before rotation.
 
-Таким образом, если обозначить ширину и высоту исходного изображения за `W` и `H`, соответственно,
-для корректных аргументов верны следующие неравенства:
+Thus, if we denote the width and height of the original image as `W` and `H`, respectively,
+for correct arguments, the following inequalities are true:
 
 * `0 <= x < x + w <= W`
 * `0 <= y < y + h <= H`
 
-## Стенография
-В дополнение к команде `crop-rotate` реализованы команды `insert` и `extract`,
-позволяющие спрятать внутри изображения сообщение
-([стеганография](https://ru.wikipedia.org/wiki/%D0%A1%D1%82%D0%B5%D0%B3%D0%B0%D0%BD%D0%BE%D0%B3%D1%80%D0%B0%D1%84%D0%B8%D1%8F)).
-Команда `insert` сохраняет в изображение сообщение, а `extract` — извлекает его оттуда.
+## Shorthand
+In addition to the `crop-rotate` command, the `insert` and `extract` commands are implemented,
+allowing you to hide a message inside the image
+([Shorthand](https://en.wikipedia.org/wiki/Shorthand)).
+The `insert` command saves the message to the image, and `extract` extracts it from there.
 
-Идея следующая: если менять только самые младшие биты в цветовых компонентах,
-то сторонний наблюдатель не заметит искажения.
-Этим искажением можно скрыто передавать информацию.
+The idea is as follows: if you change only the least significant bits in the color components,
+then an outside observer will not notice the distortion.
+This distortion can carry information.
 
-### Способ кодирования
-Исходное сообщение состоит только из заглавных латинских букв, пробела, точки и запятой.
-Каждый символ преобразовывается в число от 0 до 28, соответственно (всего 29 различных значений),
-а число — в пять бит, записанных от младших к старшим.
-Всего сообщение из `N` символов кодируется при помощи `5N` Бит.
+### Coding method
+The initial message consists only of capital Latin letters, a space, a period and a comma.
+Each character is converted to a number from 0 to 28, respectively (29 different values in total),
+and the number is in five bits, written from the lowest to the highest.
+A total message of `N` characters is encoded using `5N` Bits.
 
-Для передачи сообщения, помимо изображения-носителя, потребуется __ключ__ — текстовый файл,
-описывающий, в каких пикселях кодируются биты сообщения.
-В этом файле на отдельных строчках записаны:
+To send a message, in addition to the carrier image, you will need __key__ - a text file,
+describing in which pixels the message bits are encoded.
+In this file, on separate lines, are written:
 
-* Координаты `x` и `y` (`0 <= x < W`, `0 <= y < H`) пикселя, в который надо сохранить
-  соответствующий бит.
-* Буква `R`/`G`/`B` обозначающая цветовой канал, в младшем бите которого требуется записать бит
-  сообщения.
+* The `x` and `y` coordinates (`0 <= x < W`, `0 <= y < H`) of the pixel to save to
+   corresponding bit.
+* The letter `R`/`G`/`B` denoting the color channel in the least significant bit of which you want to write a bit
+   messages.
 
-Если ключ записывает больше бит, чем нужно сообщению, последние строчки игнорируются.
+If the key writes more bits than the message needs, the last lines are ignored.
 
-### Консольное приложение
-Для сохранения секретной строчки в изображение приложение запускается следующей командой:
+### Console application
+To save the secret stitch to an image, the application is launched with the following command:
 ```
 ./hw-01_bmp insert ‹in-bmp› ‹out-bmp› ‹key-txt› ‹msg-txt›
 ```
 
-Для извлечения секретной строчки из изображения приложение запускается следующей командой:
+To extract the secret line from an image, the application is launched with the following command:
 ```
 ./hw-01_bmp extract ‹in-bmp› ‹key-txt› ‹msg-txt›
 ```
 
-Используемые параметры:
+Used parameters:
 
-* `in-bmp` — имя входного файла с изображением.
-* `out-bmp` — имя выходного файла с изображением.
-* `key-txt` — тестовый файл с ключом.
-* `msg-txt` — текстовый файл с секретным сообщением.
+* `in-bmp` is the name of the input image file.
+* `out-bmp` is the name of the output image file.
+* `key-txt` is a test file with a key.
+* `msg-txt` is a text file with a secret message.
